@@ -6,7 +6,7 @@ import SwapSession from "./SwapSession";
 import { Alchemy, Network } from "alchemy-sdk";
 import sha256 from "crypto-js/sha256";
 import { ethers } from "ethers";
-import { depositFromAcc1 } from "../utils/Interact";
+import { depositFromAcc1 , completeSwap } from "../utils/Interact";
 const config = {
   apiKey: "Jyuuy4MI_u6RLY8TlkGasdskg1CJeIhE",
   network: Network.MATIC_MUMBAI,
@@ -146,6 +146,16 @@ const SwapPage = () => {
     );
   };
 
+  const handleSignClick = async() =>{
+    const provider = await initializeEthers();
+    const bytes32SessionId = ethers.utils.solidityKeccak256(
+      ["string"],
+      [sessionURL],
+    );
+    completeSwap(provider , bytes32SessionId);
+
+  }
+
   return (
     <div className="flex h-screen bg-gradient-to-r from-blue-500 to-indigo-500 text-white">
       {/* Left Side */}
@@ -222,6 +232,7 @@ const SwapPage = () => {
           </button>
 
           <button
+            onClick={handleSignClick}
             className={`${
               false
                 ? "bg-gray-400 cursor-not-allowed"

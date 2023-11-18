@@ -3,9 +3,11 @@ import React, { useState, useEffect } from "react";
 import { AiOutlineSwap } from "react-icons/ai";
 import { useAccount } from "wagmi";
 import SwapSession from "./SwapSession";
+import {depositFromAcc2} from "../utils/Interact"
 import { Alchemy, Network } from "alchemy-sdk";
 import NFTDisplayBox from "./DisplayNftDetails";
 import { useRouter } from 'next/router';
+import { ethers } from "ethers";
 
 const config = {
   apiKey: "Jyuuy4MI_u6RLY8TlkGasdskg1CJeIhE",
@@ -20,6 +22,7 @@ const SwapPage = () => {
   const [nfts, setNfts] = useState([]);
   const [selectedNft, setSelectedNft] = useState(null);
   const [showNftSelector, setShowNftSelector] = useState(false);
+  const [SessionURL , setSessionURL ] = useState("");
   const router = useRouter();
   const { session_id, userAddress, title } = router.query;
    console.log("sessionId",session_id )
@@ -51,6 +54,38 @@ const SwapPage = () => {
     }
   };
 
+  useEffect(() => {
+    const fullURL = window.location.href;
+    // This will give you the full URL
+    setSessionURL(fullURL);
+  
+    console.log("Full URL:", fullURL);
+    console.log("sessionURL",SessionURL);
+  }, [SessionURL]);
+  
+
+  const initializeEthers = async () => {
+    try {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+      const [account] = await provider.listAccounts();
+      console.log("Connected account:", account);
+
+      const balance = await provider.getBalance(account);
+      console.log("Balance:", ethers.utils.formatEther(balance));
+      return provider;
+    } catch (error) {
+      console.error("Error initializing ethers:", error.message);
+    }
+  };
+  useEffect(() => {
+    const getEthers = async () => {
+      const provider = await initializeEthers();
+      console.log(provider);
+    };
+    getEthers();
+  }, []);
+
   const handleNftSelect = (nft) => {
     console.log("Selected NFT:", nft);
     setSelectedNft(nft);
@@ -67,7 +102,6 @@ const SwapPage = () => {
   };
 
   const handleDisconnect = () => {
-    // Implement disconnect logic if needed
     setShowModal(false);
   };
 
@@ -76,21 +110,27 @@ const SwapPage = () => {
   };
 
   const handleConfirm = () => {
-    // Implement logic to handle the confirmed amount
     console.log("Amount confirmed:", amount);
     setShowModal(false);
   };
-  const handleFreezeClick = () => {
-    // Implement logic for Freeze button click
+  const handleFreezeClick = async () => {
     setFreezeClicked(true);
+    const provider = await initializeEthers();
+    console.log(SessionURL)
+    console.log(selectedNft);
+    depositFromAcc2(
+      provider,
+      SessionURL,
+      selectedNft.address,
+      selectedNft.tokenId
 
-    // ... (other Freeze button logic)
+    )
   };
 
   return (
     <div className="flex h-screen bg-gradient-to-r from-blue-500 to-indigo-500 text-white">
-      {/* Left Side */}
       <div className="flex-1 flex flex-col items-center justify-center p-6">
+      <ConnectButton accountStatus="address" chainStatus="icon" />
       {isConnected ? (
         <div>
           <h2 className="text-lg font-semibold">Selected NFT</h2>
@@ -150,9 +190,7 @@ const SwapPage = () => {
             Freeze
           </button>
 
-          <button className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-400">
-            Sign
-          </button>
+
         </div>
       </div>
 

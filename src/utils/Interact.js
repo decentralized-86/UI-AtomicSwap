@@ -1,35 +1,78 @@
 import { ethers } from "ethers";
 import { Address, ABI } from "../contract/contract";
+import fetchABI from "./getchAbi";
 
-const depositFromAcc2 = async (ether) => {};
+const approveNFT = async (provider, nftAddress, tokenId, contractAddress) => {
+  const signer = provider.getSigner();
+  const approveABI = [
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "name": "tokenId",
+          "type": "uint256"
+        }
+      ],
+      "name": "approve",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ];
 
-const depositFromAcc1 = async (sessionId, provider, nftAddress, tokenId) => {
-  try {
-    // 1. Replace these with your Ethereum provider, contract address, and ABI
-    //   const provider = new ethers.providers.JsonRpcProvider('YOUR_ETH_PROVIDER_URL');
-
-    //   // 2. Connect to Ethereum provider
-    const signer = provider.getSigner();
-    console.log(provider, signer);
-    console.log(sessionId);
-    const bytes32SessionId = ethers.utils.formatBytes32String(sessionId);
-
-    // 3. Create contract instance
-    const contract = new ethers.Contract(Address, ABI, signer);
-
-    // 4. Call the deposit function
-    const transaction = await contract.depositUser1NFT(bytes32SessionId , nftAddress , tokenId );
-
-    // Wait for the transaction to be mined
-    await transaction.wait();
-
-    console.log("Deposit successful!");
-  } catch (error) {
-    console.error("Error depositing Ether:", error.message);
-  }
+  const nftContract = new ethers.Contract(nftAddress, approveABI, signer);
+  console.log("Contract Instance created")
+  await nftContract.approve(contractAddress, tokenId);
+  console.log("Approved the address")
 };
 
-const completeSwap = async (ether) => {};
+
+const depositFromAcc2 = async (provider, sessionURL, nftAddress, tokenId) => {
+  // First approve the contract to transfer NFT
+  await approveNFT(provider, nftAddress, tokenId, Address);
+
+  const signer = provider.getSigner();
+  const bytes32SessionId = ethers.utils.solidityKeccak256(["string"], [sessionURL]);
+  console.log(bytes32SessionId);
+  const contract = new ethers.Contract(Address, ABI, signer);
+
+  const transaction = await contract.depositUser2NFT(bytes32SessionId, nftAddress, tokenId,{gasLimit : 200000});
+  await transaction.wait();
+  console.log("NFT deposited by User 2");
+};
+
+// Similar changes for depositFromAcc1 and completeSwap...
+const depositFromAcc1 = async (sessionId, provider, nftAddress, tokenId) => {
+  try {
+    console.log("nftAddress",nftAddress);
+    // First approve the contract to transfer NFT
+    await approveNFT(provider, nftAddress, tokenId, Address);
+
+    const signer = provider.getSigner();
+    const bytes32SessionId = ethers.utils.solidityKeccak256(["string"], [sessionId]);
+    console.log(bytes32SessionId);
+    const contract = new ethers.Contract(Address, ABI, signer);
+
+    const transaction = await contract.depositUser1NFT(bytes32SessionId, nftAddress , tokenId ,{gasLimit : 200000});
+    await transaction.wait();
+    console.log("NFT deposited by User 1");
+  } catch (error) {
+    console.error("Error depositing NFT:", error.message);
+  }
+};
+const completeSwap = async (provider , sessionURL) => {
+
+  const signer = provider.getSigner();
+  const contract = new ethers.Contract(Address, ABI, signer);
+
+  const transaction = await contract.completeSwap(sessionURL);
+
+};
 
 module.exports = {
   depositFromAcc1,
