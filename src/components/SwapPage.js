@@ -4,6 +4,7 @@ import { AiOutlineSwap } from "react-icons/ai";
 import { useAccount } from "wagmi";
 import SwapSession from "./SwapSession";
 import { Alchemy, Network } from "alchemy-sdk";
+import sha256 from "crypto-js/sha256";
 import { ethers } from "ethers";
 import { depositFromAcc1 } from "../utils/Interact";
 const config = {
@@ -19,6 +20,8 @@ const SwapPage = () => {
   const [nfts, setNfts] = useState([]);
   const [selectedNft, setSelectedNft] = useState(null);
   const [showNftSelector, setShowNftSelector] = useState(false);
+  const [sessionURL, setSessionURL] = useState("");
+  const baseURL = "http://localhost:3000/swap";
 
   const fetchNFTs = async (walletAddress) => {
     console.log("Fetching NFTs for address:", walletAddress);
@@ -104,10 +107,43 @@ const SwapPage = () => {
     console.log("Link copied to clipboard");
   };
 
+  const generateSessionId = () => {
+    if (!address || !selectedNft.address || !selectedNft.tokenId) {
+      setError("Invalid token or user information.");
+      return;
+    }
+
+    // setIsLoading(true);
+    console.log("Generating session ID...");
+
+    try {
+      const uniqueId = sha256(
+        `${address}-${selectedNft.address}-${selectedNft.tokenId}-${Date.now()}`
+      ).toString();
+      // setSessionId(uniqueId);
+      console.log("Session ID set:", uniqueId);
+      const sessionURL = `${baseURL}?session_id=${uniqueId}&userAddress=${encodeURIComponent(
+        address
+      )}&title=${encodeURIComponent(selectedNft.title)}`;
+      setSessionURL(sessionURL);
+      return sessionURL;
+    } catch (e) {
+      console.error("Error generating session ID:", e);
+      // setError("Failed to generate session ID.");
+    } finally {
+      // setIsLoading(false);
+    }
+  };
+
   const handleFreezeClick = async () => {
     setFreezeClicked(true);
     const provider = await initializeEthers();
-    depositFromAcc1(provider)
+    depositFromAcc1(
+      sessionURL,
+      provider,
+      selectedNft.address,
+      selectedNft.tokenId
+    );
   };
 
   return (
@@ -203,6 +239,8 @@ const SwapPage = () => {
         <div className="flex flex-col items-center space-y-4">
           {selectedNft && (
             <SwapSession
+              sessionID={sessionURL}
+              generateSessionId={generateSessionId}
               userAddress={address}
               tokenContractAddress={selectedNft.address}
               tokenId={selectedNft.tokenId}
