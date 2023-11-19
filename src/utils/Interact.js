@@ -35,7 +35,7 @@ const approveNFT = async (provider, nftAddress, tokenId, contractAddress) => {
 const depositFromAcc2 = async (provider, sessionURL, nftAddress, tokenId) => {
   // First approve the contract to transfer NFT
   await approveNFT(provider, nftAddress, tokenId, Address);
-
+console.log(sessionURL);
   const signer = provider.getSigner();
   const bytes32SessionId = ethers.utils.solidityKeccak256(["string"], [sessionURL]);
   console.log(bytes32SessionId);
@@ -49,7 +49,7 @@ const depositFromAcc2 = async (provider, sessionURL, nftAddress, tokenId) => {
 // Similar changes for depositFromAcc1 and completeSwap...
 const depositFromAcc1 = async (sessionId, provider, nftAddress, tokenId) => {
   try {
-    console.log("nftAddress",nftAddress);
+    console.log("nftAddress",nftAddress, "sessionId", sessionId);
     // First approve the contract to transfer NFT
     await approveNFT(provider, nftAddress, tokenId, Address);
 

@@ -12,7 +12,7 @@ function SwapSession({
   title,
 }) {
   const [sessionId, setSessionId] = useState("");
-  const [sessionURL, setSessionURL] = useState("");
+  const [sessionURL, setSessionURL] = useState("ABC");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
@@ -30,19 +30,24 @@ function SwapSession({
         .catch(() => setError("Failed to copy URL to clipboard."));
     }
   };
+
   const handleGenerateId = async () => {
     try {
       setIsLoading(true);
-      const id = generateSessionId();
-      setSessionURL(id)
-      console.log(id , "Generated session");
-      console.log(sessionURL);
+      const id = await generateSessionId();
+      setSessionURL(id);
     } catch (error) {
       console.error(error.message);
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Use useEffect to log the updated sessionURL after the state has been updated
+  useEffect(() => {
+    console.log("Updated URL", sessionURL);
+  }, [sessionURL]);
+  
   useEffect(() => {
     console.log("sessionURL", sessionURL);
     if (error) {
@@ -73,6 +78,7 @@ function SwapSession({
               <input
                 type="url"
                 value={sessionURL}
+                readOnly
                 className="  rounded-md bg-transparent py-2 px-4 focus:outline-none w-full"
               />
               <span
