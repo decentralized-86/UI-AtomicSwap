@@ -37,7 +37,7 @@ const depositFromAcc2 = async (provider, sessionURL, nftAddress, tokenId) => {
   console.log("sessionId for the deposit 2 function",sessionURL);
   // First approve the contract to transfer NFT
   await approveNFT(provider, nftAddress, tokenId, Address);
-
+console.log(sessionURL);
   const signer = provider.getSigner();
   const bytes32SessionId = ethers.utils.solidityKeccak256(["string"], [sessionURL]);
   console.log("Bytes32 SessionId for the deposit 2",bytes32SessionId);
