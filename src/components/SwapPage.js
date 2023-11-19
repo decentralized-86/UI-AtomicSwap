@@ -138,6 +138,7 @@ const SwapPage = () => {
   const handleFreezeClick = async () => {
     setFreezeClicked(true);
     const provider = await initializeEthers();
+    console.log("this is the URL which we r sending from user1 for bytes 32 hash",sessionURL);
     depositFromAcc1(
       sessionURL,
       provider,
@@ -238,7 +239,6 @@ const SwapPage = () => {
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-red-500 hover:bg-red-400"
             } text-white py-2 px-4 rounded transition-all duration-300`}
-            disabled={freezeClicked}
           >
             Sign
           </button>

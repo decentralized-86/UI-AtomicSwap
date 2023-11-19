@@ -60,7 +60,6 @@ const SwapPage = () => {
     setSessionURL(fullURL);
   
     console.log("Full URL:", fullURL);
-    console.log("sessionURL",SessionURL);
   }, [SessionURL]);
   
 
@@ -116,7 +115,7 @@ const SwapPage = () => {
   const handleFreezeClick = async () => {
     setFreezeClicked(true);
     const provider = await initializeEthers();
-    console.log(SessionURL)
+    console.log("session URL in the handle freeze function",SessionURL)
     console.log(selectedNft);
     depositFromAcc2(
       provider,
